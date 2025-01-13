@@ -1,2 +1,2 @@
-# retake_scheduler
-Tool to help students schedule for missed test.
+# retake_scheduler.
+A simple tool to help students easily reschedule missed exams and tests with their instructors.
