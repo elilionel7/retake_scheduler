@@ -45,9 +45,13 @@ def setup_routes(app):
             new_student = Student(name=name, student_id=student_id, class_id=class_id)
             db.session.add(new_student)
             db.session.commit()
-            return redirect(url_for('home'))
+
+            return redirect(url_for('home'))  
+        
+        # Fetch all classes for the dropdown
         classes = Class.query.all()
         return render_template('add_student.html', classes=classes)
+
 
     # Route to schedule a retake
     @app.route('/schedule', methods=['GET', 'POST'])
