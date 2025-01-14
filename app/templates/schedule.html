@@ -1,0 +1,11 @@
+<form method="POST">
+    <label for="student_id">Student:</label>
+    <select name="student_id">
+        {% for student in students %}
+        <option value="{{ student.student_id }}">{{ student.name }}</option>
+        {% endfor %}
+    </select><br>
+    <label for="date">Retake Date:</label>
+    <input type="date" name="date" required><br>
+    <button type="submit">Schedule Retake</button>
+</form>

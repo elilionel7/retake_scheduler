@@ -1,0 +1,13 @@
+<form method="POST">
+    <label for="name">Name:</label>
+    <input type="text" name="name" required><br>
+    <label for="student_id">Student ID:</label>
+    <input type="text" name="student_id" required><br>
+    <label for="class_id">Class:</label>
+    <select name="class_id">
+        {% for class in classes %}
+        <option value="{{ class.id }}">{{ class.course_name }} - {{ class.section }}</option>
+        {% endfor %}
+    </select><br>
+    <button type="submit">Add Student</button>
+</form>
