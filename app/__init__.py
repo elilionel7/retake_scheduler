@@ -8,10 +8,15 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///scheduler.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+    # Initialize database
     db.init_app(app)
 
+    # Register routes
+    from .routes import setup_routes
+    setup_routes(app)
+
+    # Create tables
     with app.app_context():
-        from . import routes
         db.create_all()
-    
+
     return app
