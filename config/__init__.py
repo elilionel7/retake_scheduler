@@ -1,40 +1,25 @@
-from flask import Flask
-from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from dotenv import load_dotenv
 import os
 
-db = SQLAlchemy()
-migrate = Migrate()
+# Initialize extensions
 mail = Mail()
 
-def create_app():
-    app = Flask(__name__)
-
+def configure_app(app):
     # Load environment variables
     load_dotenv()
 
-    # Configurations
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
+    # General Flask settings
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///instance/scheduler.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
-    app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
-    app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS') == 'True'
-    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 
-    # Initialize extensions
-    db.init_app(app)
+    # Email configurations
+    app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+    app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+    app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True') == 'True'
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', 'your-email@example.com')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', 'your-email-password')
+
+    # Initialize Mail extension
     mail.init_app(app)
-    migrate.init_app(app, db)
-
-    # Import routes to register them
-    from ..app.routes import setup_routes
-    setup_routes(app)
-
-    # Create database tables if not exist
-    with app.app_context():
-        db.create_all()
-
-    return app
