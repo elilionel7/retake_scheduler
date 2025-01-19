@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from app.config.schedule_config import available_schedule
+from config.schedule_config import available_schedule
 
 def generate_schedule():
     today = datetime.now()
