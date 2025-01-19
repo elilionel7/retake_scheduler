@@ -30,7 +30,7 @@ def create_app():
     migrate.init_app(app, db)
 
     # Import routes to register them
-    from .routes import setup_routes
+    from ..app.routes import setup_routes
     setup_routes(app)
 
     # Create database tables if not exist

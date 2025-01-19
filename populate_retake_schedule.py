@@ -1,4 +1,4 @@
-from app import create_app, db
+from config import create_app, db
 from app.models import RetakeSchedule
 
 app = create_app()

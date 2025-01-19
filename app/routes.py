@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for
 from flask_mail import Message
-from app import mail
+from config import mail
 from . import db
 from dotenv import load_dotenv
 import os
