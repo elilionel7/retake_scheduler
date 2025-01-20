@@ -1,7 +1,6 @@
 from flask import Blueprint
 
-# Create a Blueprint for home-related routes
-home_bp = Blueprint('home', __name__)
+home_bp = Blueprint('home', __name__, url_prefix='')  # No prefix, global namespace
 
 @home_bp.route('/')
 def home():

@@ -3,7 +3,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from flask_mail import Message
 from config import mail
-from . import db
+from app import db 
 from dotenv import load_dotenv
 import os
 from app.generate_schedule import generate_schedule

@@ -1,4 +1,5 @@
-from config import create_app, db
+from app import create_app
+from app import db 
 from app.models import Instructor, Class, Student
 
 app = create_app()
@@ -29,6 +30,9 @@ def populate_sample_data():
         students = [
             Student(name="Alice Johnson", student_id="W1001", class_id=classes[0].id, is_authorized=True),
             Student(name="Bob Williams", student_id="W1002", class_id=classes[1].id, is_authorized=False),
+            Student(name="Charlie Brown", student_id="W1003", class_id=classes[0].id, is_authorized=True),
+            Student(name="David Lee", student_id="W1004", class_id=classes[1].id, is_authorized=False), 
+            Student(name="Eva Davis", student_id="W1005", class_id=classes[0].id, is_authorized=True),
         ]
         db.session.add_all(students)
         db.session.commit()

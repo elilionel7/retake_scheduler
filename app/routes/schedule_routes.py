@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from flask_mail import Message
 from config import mail
-from . import db
+from app import db 
 from dotenv import load_dotenv
 import os
-from app.models import Student, Retake, Instructor, Class, RetakeSchedule
+from app.models import Student, Retake, RetakeSchedule
 
 schedule_bp = Blueprint('schedule', __name__)
 @schedule_bp.route('/schedule', methods=['GET', 'POST'])
@@ -19,6 +19,11 @@ def schedule():
             return "Student not found.", 404
         if not student.is_authorized:
             return "You are not authorized for a retake.", 403
+
+        # Check if the student already has an active scheduled retake
+        existing_retake = Retake.query.filter_by(student_id=student_id).first()
+        if existing_retake:
+            return "You already have a scheduled retake.", 400
 
         # Check if the selected schedule is valid
         selected_slot = RetakeSchedule.query.get(schedule_id)

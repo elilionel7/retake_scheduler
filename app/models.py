@@ -41,8 +41,8 @@ class RetakeSchedule(db.Model):
 
 class Retake(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.String(10), db.ForeignKey('student.student_id'), nullable=False)
-    date = db.Column(db.String(10), nullable=False)  # Date of the retake
-    time = db.Column(db.String(5), nullable=False)   # Time of the retake
-
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
+    date = db.Column(db.String(10), nullable=False)
+    time = db.Column(db.String(5), nullable=False)
+    status = db.Column(db.String(20), default='Scheduled')  # Scheduled, Completed, Canceled
 

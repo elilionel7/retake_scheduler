@@ -17,7 +17,7 @@ def add_instructor():
         new_instructor = Instructor(name=name, email=email)
         db.session.add(new_instructor)
         db.session.commit()
-        return redirect(url_for('home'))
+        return redirect(url_for('home.home'))
 
     return render_template('add_instructor.html', error=None)
 
