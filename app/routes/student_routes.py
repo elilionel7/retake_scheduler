@@ -4,7 +4,7 @@ from app.models import Student, Class
 
 student_bp = Blueprint('student', __name__)
 
-@student_bp.route('/add_student', methods=['GET', 'POST'])
+@student_bp.route('/add-student', methods=['GET', 'POST'])
 def add_student():
     if request.method == 'POST':
         name = request.form['name']

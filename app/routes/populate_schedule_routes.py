@@ -9,8 +9,8 @@ import os
 from app.generate_schedule import generate_schedule
 from app.models import  RetakeSchedule
 
-populate_schedule_bp = Blueprint('populate_schedule', __name__)
-@populate_schedule_bp.route('/populate_schedule', methods=['GET'])
+populate_schedule_bp = Blueprint('populate-schedule', __name__)
+@populate_schedule_bp.route('/populate-schedule', methods=['GET'])
 def populate_schedule():
     # Generate the dynamic schedule
     schedule = generate_schedule()

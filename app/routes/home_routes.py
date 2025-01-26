@@ -1,7 +1,11 @@
-from flask import Blueprint
+# app/routes/home_routes.py
 
-home_bp = Blueprint('home', __name__, url_prefix='')  # No prefix, global namespace
+from flask import Blueprint, render_template
+
+# Create a blueprint named "home_bp"
+home_bp = Blueprint('home-bp', __name__)
 
 @home_bp.route('/')
 def home():
-    return "Welcome to the Retake Scheduler App!"
+    """Render the home.html template."""
+    return render_template('home.html')

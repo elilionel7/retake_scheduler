@@ -1,5 +1,8 @@
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), 'config'))
 from datetime import datetime, timedelta
-from config.schedule_config import available_schedule
+from schedule_config import available_schedule
 
 def generate_schedule():
     today = datetime.now()

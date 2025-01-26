@@ -4,7 +4,7 @@ from app.models import Class, Instructor
 
 class_bp = Blueprint('class', __name__)
 
-@class_bp.route('/add_class', methods=['GET', 'POST'])
+@class_bp.route('/add-class', methods=['GET', 'POST'])
 def add_class():
     if request.method == 'POST':
         course_name = request.form['course_name']

@@ -4,7 +4,7 @@ from app.models import Instructor
 
 instructor_bp = Blueprint('instructor', __name__)
 
-@instructor_bp.route('/add_instructor', methods=['GET', 'POST'])
+@instructor_bp.route('/add-instructor', methods=['GET', 'POST'])
 def add_instructor():
     if request.method == 'POST':
         name = request.form['name']

@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for
 from app import db  
 from app.models import Student
 
-manage_student_bp = Blueprint('manage_students', __name__)
-@manage_student_bp.route('/manage_students', methods=['GET', 'POST'])
+manage_student_bp = Blueprint('manage-students', __name__)
+@manage_student_bp.route('/manage-students', methods=['GET', 'POST'])
 def manage_students():
     if request.method == 'POST':
         student_id = request.form['student_id']
