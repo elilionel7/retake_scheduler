@@ -1,0 +1,16 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore the local virtual environment
+venv/
+
+# Ignore any local IDE settings
+.vscode/
+.idea/
+
+# OS hidden files (macOS)
+.DS_Store
+
+instance/*.db
+
