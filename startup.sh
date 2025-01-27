@@ -19,7 +19,16 @@ fi
 echo "Applying database migrations..."
 flask db upgrade || error_exit "Error applying database migrations"
 
+# Seed the database if not already seeded
+if [ ! -f "seeded" ]; then
+  echo "Seeding the database with sample data..."
+  python scripts/seed.py || error_exit "Failed to seed the database."
 
+  # Create a file to indicate seeding is done
+  touch seeded
+else
+  echo "Database already seeded. Skipping seeding."
+fi
 
 # Start the Flask app
 echo "Starting Flask app..."
