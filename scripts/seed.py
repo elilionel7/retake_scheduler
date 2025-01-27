@@ -1,21 +1,26 @@
 # seed.py
+import sys
+import os
 
+# Add the project root to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app import create_app
 from app.extensions import db
 from app.models import Instructor, Class, Student, RetakeSchedule, Retake
 from datetime import datetime, time
 
+
 def seed_data():
     app = create_app()
     with app.app_context():
+
         # Optional: Clear existing data to prevent duplicates
         # Uncomment the following lines if you want to reset the data each time
-        # db.session.query(Retake).delete()
-        # db.session.query(RetakeSchedule).delete()
-        # db.session.query(Student).delete()
-        # db.session.query(Class).delete()
-        # db.session.query(Instructor).delete()
-
+        db.session.query(Retake).delete()
+        db.session.query(RetakeSchedule).delete()
+        db.session.query(Student).delete()
+        db.session.query(Class).delete()
+        db.session.query(Instructor).delete()
         # Check if data already exists to prevent duplicates
         if Instructor.query.first() or Class.query.first() or Student.query.first() or RetakeSchedule.query.first():
             print("Data already exists. Skipping seeding.")
@@ -44,11 +49,11 @@ def seed_data():
         # ---------------------------
         # Create Students
         # ---------------------------
-        student1 = Student(name="John Doe", student_id="W1001", class_id=class1.id, is_authorized=True)
-        student2 = Student(name="Jane Smith", student_id="W1002", class_id=class1.id, is_authorized=True)
-        student3 = Student(name="Emily Davis", student_id="W1003", class_id=class2.id, is_authorized=False)
-        student4 = Student(name="Michael Brown", student_id="W1004", class_id=class3.id, is_authorized=True)
-        student5 = Student(name="Sarah Wilson", student_id="W1005", class_id=class3.id, is_authorized=False)
+        student1 = Student(student_id="1001", name="John Doe", class_id=class1.id, is_authorized=True)
+        student2 = Student(student_id="1002", name="Jane Smith", class_id=class1.id, is_authorized=True)
+        student3 = Student(student_id="1003", name="Emily Davis", class_id=class2.id, is_authorized=False)
+        student4 = Student(student_id="1004", name="Michael Brown", class_id=class3.id, is_authorized=True)
+        student5 = Student(student_id="1005", name="Sarah Wilson", class_id=class3.id, is_authorized=False)
 
         db.session.add_all([student1, student2, student3, student4, student5])
         db.session.commit()
@@ -72,28 +77,20 @@ def seed_data():
         # Create Retakes
         # ---------------------------
         # Schedule retakes for students
-        # Ensure that retakes do not exceed the max_capacity
-        # We'll assign retakes to students who are authorized
-
-        # Define a helper function to find a RetakeSchedule
-        def find_schedule(date, time_str):
-            return RetakeSchedule.query.filter_by(date=date, time=time_str).first()
-
-        # Assign Retakes
-        retake1_schedule = find_schedule("2025-02-10", "09:00")
-        retake2_schedule = find_schedule("2025-02-10", "11:00")
-        retake3_schedule = find_schedule("2025-02-11", "14:00")
+        retake1_schedule = RetakeSchedule.query.filter_by(date="2025-02-10", time="09:00").first()
+        retake2_schedule = RetakeSchedule.query.filter_by(date="2025-02-10", time="11:00").first()
+        retake3_schedule = RetakeSchedule.query.filter_by(date="2025-02-11", time="14:00").first()
 
         retakes = [
-            Retake(student_id=student1.id, date=retake1_schedule.date, time=retake1_schedule.time, status="Scheduled"),
-            Retake(student_id=student2.id, date=retake1_schedule.date, time=retake1_schedule.time, status="Scheduled"),
-            Retake(student_id=student4.id, date=retake2_schedule.date, time=retake2_schedule.time, status="Scheduled"),
+            Retake(student_id=student1.student_id, date=retake1_schedule.date, time=retake1_schedule.time, status="Scheduled"),
+            Retake(student_id=student2.student_id, date=retake1_schedule.date, time=retake1_schedule.time, status="Scheduled"),
+            Retake(student_id=student4.student_id, date=retake2_schedule.date, time=retake2_schedule.time, status="Scheduled"),
             # student5 is not authorized; optionally, handle differently or skip
         ]
 
         # Update current_bookings
         for retake in retakes:
-            schedule = find_schedule(retake.date, retake.time)
+            schedule = RetakeSchedule.query.filter_by(date=retake.date, time=retake.time).first()
             if schedule and schedule.current_bookings < schedule.max_capacity:
                 schedule.current_bookings += 1
                 db.session.add(retake)
