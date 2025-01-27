@@ -21,7 +21,7 @@ def manage_students():
             student.is_authorized = False
         db.session.commit()
 
-        return redirect(url_for('manage_students.manage_students'))
+        return redirect(url_for('manage-students.manage_students'))
 
     # Fetch all students
     students = Student.query.all()

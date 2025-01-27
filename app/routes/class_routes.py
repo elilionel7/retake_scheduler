@@ -13,6 +13,6 @@ def add_class():
         new_class = Class(course_name=course_name, section=section, instructor_id=instructor_id)
         db.session.add(new_class)
         db.session.commit()
-        return redirect(url_for('home.home'))
+        return redirect(url_for('home-bp.home'))
     instructors = Instructor.query.all()
     return render_template('add_class.html', instructors=instructors)

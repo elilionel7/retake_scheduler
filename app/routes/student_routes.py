@@ -13,7 +13,7 @@ def add_student():
         new_student = Student(name=name, student_id=student_id, class_id=class_id)
         db.session.add(new_student)
         db.session.commit()
-        return redirect(url_for('home.home'))
+        return redirect(url_for('home-bp.home'))
 
     classes = db.session.query(Class).all()
     return render_template('add_student.html', classes=classes)
