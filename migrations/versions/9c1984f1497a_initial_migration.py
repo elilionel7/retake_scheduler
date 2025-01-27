@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 9eb92741813f
+Revision ID: 9c1984f1497a
 Revises: 
-Create Date: 2025-01-25 21:51:49.979107
+Create Date: 2025-01-27 22:14:17.071097
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9eb92741813f'
+revision = '9c1984f1497a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -42,22 +42,20 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('student',
-    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('student_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
-    sa.Column('student_id', sa.String(length=10), nullable=False),
     sa.Column('class_id', sa.Integer(), nullable=False),
     sa.Column('is_authorized', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['class_id'], ['class.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('student_id')
+    sa.PrimaryKeyConstraint('student_id')
     )
     op.create_table('retake',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('student_id', sa.Integer(), nullable=True),
+    sa.Column('student_id', sa.Integer(), nullable=False),
     sa.Column('date', sa.String(length=10), nullable=False),
     sa.Column('time', sa.String(length=5), nullable=False),
     sa.Column('status', sa.String(length=20), nullable=True),
-    sa.ForeignKeyConstraint(['student_id'], ['student.id'], ),
+    sa.ForeignKeyConstraint(['student_id'], ['student.student_id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
