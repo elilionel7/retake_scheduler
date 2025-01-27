@@ -11,17 +11,13 @@ class Instructor(db.Model):
 
 
 class Student(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, primary_key=True)  # Changed to Integer and Primary Key
     name = db.Column(db.String(100), nullable=False)
-    student_id = db.Column(
-        db.String(10), unique=True, nullable=False
-    )  # Student ID w1001
-    class_id = db.Column(db.Integer, db.ForeignKey("class.id"), nullable=False)
+    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
     is_authorized = db.Column(db.Boolean, default=False)
 
     # Explicit back_populates relationship
-    assigned_class = db.relationship("Class", back_populates="students")
-
+    assigned_class = db.relationship('Class', back_populates='students')
 
 class Class(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,9 +41,10 @@ class RetakeSchedule(db.Model):
 
 class Retake(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey("student.id"))
+    student_id = db.Column(db.Integer, db.ForeignKey('student.student_id'), nullable=False)  # Updated Foreign Key
     date = db.Column(db.String(10), nullable=False)
     time = db.Column(db.String(5), nullable=False)
-    status = db.Column(
-        db.String(20), default="Scheduled"
-    )  # Scheduled, Completed, Canceled
+    status = db.Column(db.String(20), default='Scheduled')  # Scheduled, Completed, Canceled
+
+    # Optional: Define relationship to Student
+    student = db.relationship('Student', backref='retakes')
