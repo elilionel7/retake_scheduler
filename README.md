@@ -4,6 +4,7 @@ A simple tool to help students easily reschedule missed exams and tests with the
 run: docker compose up --build
 
 ## remove container, image and volumes
+docker compose down
 docker rm -f $(docker ps -aq)
 docker rmi -f $(docker images -aq)
 docker system prune -a --volumes -f
