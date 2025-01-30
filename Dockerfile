@@ -1,10 +1,13 @@
-# Dockerfile
-
 FROM python:3.9-slim
+
+# Install netcat (nc) so the wait script can use 'nc -z'
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends netcat-openbsd && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-
+# Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -17,12 +20,13 @@ COPY . .
 
 # Set environment variables (optional, overridden by docker-compose)
 ENV FLASK_APP=run.py
-ENV FLASK_ENV=development  
+ENV FLASK_ENV=development
 
+# Copy your startup script (the one that waits for DB, applies migrations, etc.)
 COPY startup.sh /startup.sh
 RUN chmod +x /startup.sh
-# Expose port 5000 (Flask default)
+
 EXPOSE 8000
 
-# Run migrations and start the Flask app
+# Finally, run your startup script
 CMD ["/startup.sh"]

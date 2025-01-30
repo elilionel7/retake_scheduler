@@ -1,19 +1,5 @@
-# docker-compose.yml
 
 services:
-  web:
-    build: .
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-    environment:
-      - SECRET_KEY=${SECRET_KEY}
-      - DATABASE_URL=${DATABASE_URL}
-      - FLASK_ENV=${FLASK_ENV}
-    volumes:
-      - .:/app  # Optional: mount code for live development
-    
   db:
     image: postgres:15-alpine
     environment:
@@ -24,7 +10,40 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    # Add a healthcheck to wait until Postgres is up
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    # Use condition: service_healthy for the db
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - FLASK_ENV=${FLASK_ENV}
+      # Optionally ensure these are set if your wait script references them
+      - DB_HOST=db
+      - DB_PORT=5432
+    volumes:
+      - .:/app  # mount code for live dev
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}  # or any valid email
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}  # pick a strong password
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
 
 volumes:
   postgres_data:
-    

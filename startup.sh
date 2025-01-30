@@ -1,10 +1,22 @@
-#!/bin/sh
+#!/usr/bin/env bash
+set -e
+
+HOST="${DB_HOST:-db}"
+PORT="${DB_PORT:-5432}"
 
 # Function to handle errors
 error_exit() {
   echo "$1" 1>&2
   exit 1
 }
+
+echo "Waiting for Postgres at $HOST:$PORT..."
+
+until nc -z "$HOST" "$PORT"; do
+  sleep 1
+done
+
+echo "Postgres is ready!"
 
 # Check if the migrations folder exists
 if [ ! -d "migrations" ]; then
@@ -25,11 +37,11 @@ if [ ! -f "seeded" ]; then
   python scripts/seed.py || error_exit "Failed to seed the database."
 
   # Create a file to indicate seeding is done
-  touch seeded
+  echo "Database seeded." 
 else
   echo "Database already seeded. Skipping seeding."
 fi
 
-# Start the Flask app
-echo "Starting Flask app..."
-exec flask run --host=0.0.0.0 --port=8000
+# Start your Flask app with Gunicorn
+echo "Starting the Flask app..."
+exec gunicorn wsgi:app --bind 0.0.0.0:8000
