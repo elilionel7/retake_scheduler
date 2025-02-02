@@ -4,3 +4,4 @@ venv/
 *.py[cod]
 .env
 docker-compose.override.yml
+migrations/
