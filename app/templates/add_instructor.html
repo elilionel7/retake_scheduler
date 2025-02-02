@@ -1,22 +1,55 @@
+<!-- app/templates/add_instructor.html -->
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Add Instructor</title>
-</head>
-<body>
-    <h1>Add a New Instructor</h1>
-    {% if error %}
-    <p style="color: red;">{{ error }}</p>
-    {% endif %}
+    <!-- Same styles as add_student.html -->
+    <style>
+      .error-message {
+        background: #ffe5e5;
+        color: #d8000c;
+        padding: 10px;
+        border-radius: 8px;
+        margin: 15px 0;
+      }
+    </style>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>👩🏫 Add New Instructor</h1>
+      <div class="nav">
+        <a href="/manage">← Back to Manage</a>
+      </div>
 
-    <form method="POST">
-        <label for="name">Name:</label><br>
-        <input type="text" name="name" required><br><br>
+      <div class="form-card">
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
 
-        <label for="email">Email:</label><br>
-        <input type="email" name="email" required><br><br>
+        <form method="POST">
+          <label>Full Name:</label>
+          <input
+            type="text"
+            name="name"
+            required
+            placeholder="Instructor's name..."
+          />
 
-        <button type="submit">Add Instructor</button>
-    </form>
-</body>
+          <label>Email Address:</label>
+          <input
+            type="email"
+            name="email"
+            required
+            placeholder="example@university.edu"
+          />
+
+          <button type="submit">🎓 Add Instructor</button>
+        </form>
+      </div>
+    </div>
+  </body>
 </html>

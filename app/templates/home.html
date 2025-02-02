@@ -1,11 +1,63 @@
 <!-- app/templates/home.html -->
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Home Page</title>
-</head>
-<body>
-    <h1>Welcome to the Retake Scheduler!</h1>
-    <p>This is the homepage where users can navigate to schedule, reschedule, or manage retakes.</p>
-</body>
+  <head>
+    <title>Mat 101 Retake Scheduler!</title>
+    <style>
+      :root {
+        --primary: #a8d8ea;
+        --secondary: #f9b5ac;
+        --accent: #ee6c4d;
+        --text: #2b2d42;
+      }
+      body {
+        font-family: 'Comic Neue', cursive;
+        margin: 0;
+        padding: 20px;
+        background: var(--primary);
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+      }
+      h1 {
+        color: var(--accent);
+        font-size: 2.5em;
+        margin-bottom: 20px;
+      }
+      .nav {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin: 20px 0;
+      }
+      .nav a {
+        padding: 10px 20px;
+        background: var(--secondary);
+        border-radius: 20px;
+        text-decoration: none;
+        color: var(--text);
+        transition: transform 0.3s;
+      }
+      .nav a:hover {
+        transform: scale(1.1);
+      }
+      .mascot {
+        font-size: 100px;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="mascot">🎓</div>
+      <h1>Welcome to Mat 101 Retake Scheduler!</h1>
+      <p>Let's make test rescheduling stress-free! 🍰</p>
+      <div class="nav">
+        <a href="/schedule">Schedule Now</a>
+        <a href="/manage-students">Manage Students</a>
+      </div>
+    </div>
+  </body>
 </html>
