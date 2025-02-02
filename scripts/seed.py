@@ -82,9 +82,9 @@ def seed_data():
         retake3_schedule = RetakeSchedule.query.filter_by(date="2025-02-11", time="14:00").first()
 
         retakes = [
-            Retake(student_id=student1.student_id, date=retake1_schedule.date, time=retake1_schedule.time, status="Scheduled"),
-            Retake(student_id=student2.student_id, date=retake1_schedule.date, time=retake1_schedule.time, status="Scheduled"),
-            Retake(student_id=student4.student_id, date=retake2_schedule.date, time=retake2_schedule.time, status="Scheduled"),
+            Retake(student_id=student1.student_id, date=retake1_schedule.date, time=retake1_schedule.time, status="Scheduled", can_modify=True),
+            Retake(student_id=student2.student_id, date=retake1_schedule.date, time=retake1_schedule.time, status="Scheduled", can_modify=True),
+            Retake(student_id=student4.student_id, date=retake2_schedule.date, time=retake2_schedule.time, status="Scheduled", can_modify=True),
             # student5 is not authorized; optionally, handle differently or skip
         ]
 

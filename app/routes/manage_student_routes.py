@@ -10,7 +10,7 @@ def manage_students():
         action = request.form['action']
 
         # Find the student
-        student = Student.query.filter_by(id=student_id).first()
+        student = Student.query.filter_by(student_id=student_id).first()
         if not student:
             return "Student not found.", 404
 

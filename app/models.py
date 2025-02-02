@@ -45,6 +45,6 @@ class Retake(db.Model):
     date = db.Column(db.String(10), nullable=False)
     time = db.Column(db.String(5), nullable=False)
     status = db.Column(db.String(20), default='Scheduled')  # Scheduled, Completed, Canceled
+    can_modify = db.Column(db.Boolean, default=True, nullable=False)
 
-    # Optional: Define relationship to Student
     student = db.relationship('Student', backref='retakes')

@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+# app/routes/schedule_routes.py
+from flask import Blueprint, render_template, request, jsonify
+
 from flask_mail import Message
 from config import mail
 from app import db 
@@ -59,4 +61,69 @@ def schedule():
         RetakeSchedule.current_bookings < RetakeSchedule.max_capacity
     ).all()
     return render_template('schedule.html', available_slots=available_slots)
+
+
+
+@schedule_bp.route('/retakes/modify', methods=['PATCH'])
+def modify_retake():
+    """Modify a student's existing retake schedule (one-time only)."""
+    if not request.is_json:
+        return jsonify({"error": "Expected JSON data"}), 400
+
+    data = request.get_json()
+    student_id = data.get('student_id')
+    new_schedule_id = data.get('new_schedule_id')
+
+    if not student_id or not new_schedule_id:
+        return jsonify({"error": "Missing student_id or new_schedule_id"}), 400
+
+    # 1. Find the student's existing "Scheduled" retake
+    existing_retake = Retake.query.filter_by(
+        student_id=student_id,
+        status='Scheduled'
+    ).first()
+
+    if not existing_retake:
+        return jsonify({"error": "No active scheduled retake found for this student."}), 404
+
+    # 2. Check if can_modify is still True
+    if not getattr(existing_retake, 'can_modify', True):
+        return jsonify({"error": "You have already modified your retake once."}), 400
+
+    # 3. Validate the new schedule slot
+    new_slot = RetakeSchedule.query.get(new_schedule_id)
+    if not new_slot:
+        return jsonify({"error": "Invalid schedule slot"}), 400
+
+    if new_slot.current_bookings >= new_slot.max_capacity:
+        return jsonify({"error": "New schedule slot is fully booked"}), 400
+
+    # 4. Free the old slot
+    old_slot = RetakeSchedule.query.filter_by(
+        date=existing_retake.date,
+        time=existing_retake.time
+    ).first()
+
+    # 5. Attempt the update in a DB transaction
+    try:
+        if old_slot:
+            old_slot.current_bookings -= 1
+
+        new_slot.current_bookings += 1
+
+        existing_retake.date = new_slot.date
+        existing_retake.time = new_slot.time
+        existing_retake.can_modify = False  # Student used their one chance
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Retake schedule updated successfully.",
+            "new_date": new_slot.date,
+            "new_time": new_slot.time
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Database update failed: {str(e)}"}), 500
 
