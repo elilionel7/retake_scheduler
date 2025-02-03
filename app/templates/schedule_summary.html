@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Retake Summary</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 20px;
+      }
+      .summary-container {
+        border: 1px solid #ccc;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+      h1 {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="summary-container">
+      <h1>Retake Summary</h1>
+      <p><strong>Date:</strong> {{ retake.date }}</p>
+      <p><strong>Time:</strong> {{ retake.time }}</p>
+      <p>
+        <strong>Modification Allowed:</strong>
+        {% if retake.can_modify %} Yes {% else %} No {% endif %}
+      </p>
+      <p>
+        Your retake is currently set to <em>{{ retake.date }}</em> at
+        <em>{{ retake.time }}</em>.
+      </p>
+      <a href="/schedule">Return to Schedule Page</a>
+    </div>
+  </body>
+</html>
