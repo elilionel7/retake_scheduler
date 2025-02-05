@@ -44,10 +44,20 @@ def schedule():
 
         return "Retake scheduled successfully!"
 
-    available_slots = RetakeSchedule.query.filter(
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+
+    available_slots_pagination = RetakeSchedule.query.filter(
         RetakeSchedule.current_bookings < RetakeSchedule.max_capacity
-    ).all()
-    return render_template("schedule.html", available_slots=available_slots)
+    ).paginate(page=page, per_page=per_page, error_out=False)
+
+    available_slots = available_slots_pagination.items
+
+    return render_template(
+        "schedule.html",
+        available_slots=available_slots,
+        pagination=available_slots_pagination,
+    )
 
 
 @schedule_bp.route("/schedule/modify", methods=["PATCH"])

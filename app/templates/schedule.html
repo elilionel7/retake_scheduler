@@ -136,6 +136,19 @@
             </option>
             {% endfor %}
           </select>
+          <div class="pagination-links" style="margin-top: 1rem">
+            {% if pagination.has_prev %}
+            <a
+              href="?page={{ pagination.prev_num }}&per_page={{ pagination.per_page }}"
+              >Previous</a
+            >
+            {% endif %} {% if pagination.has_next %}
+            <a
+              href="?page={{ pagination.next_num }}&per_page={{ pagination.per_page }}"
+              >Next</a
+            >
+            {% endif %}
+          </div>
           <button type="submit">📅 Confirm Booking</button>
         </form>
       </div>

@@ -3,36 +3,87 @@
   <head>
     <title>Retake Summary</title>
     <style>
+      :root {
+        --primary: #a8d8ea;
+        --secondary: #f9b5ac;
+        --accent: #ee6c4d;
+        --text: #2b2d42;
+      }
       body {
-        font-family: sans-serif;
-        margin: 20px;
+        font-family: 'Comic Neue', cursive;
+        margin: 0;
+        padding: 20px;
+        background: var(--primary);
+        min-height: 100vh;
       }
       .summary-container {
-        border: 1px solid #ccc;
-        padding: 20px;
-        border-radius: 8px;
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
         max-width: 500px;
-        margin: 0 auto;
-      }
-      h1 {
+        margin: 2rem auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         text-align: center;
       }
+      h1 {
+        color: var(--accent);
+        font-size: 2.2em;
+        margin-bottom: 1.5rem;
+      }
+      .summary-detail {
+        font-size: 1.1em;
+        margin: 1rem 0;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+      }
+      .status-indicator {
+        font-weight: bold;
+        color: var(--accent);
+      }
+      .nav-link {
+        display: inline-block;
+        margin-top: 2rem;
+        padding: 12px 25px;
+        background: var(--secondary);
+        color: var(--text);
+        text-decoration: none;
+        border-radius: 25px;
+        transition: transform 0.3s;
+      }
+      .nav-link:hover {
+        transform: translateY(-2px);
+      }
     </style>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div class="summary-container">
-      <h1>Retake Summary</h1>
-      <p><strong>Date:</strong> {{ retake.date }}</p>
-      <p><strong>Time:</strong> {{ retake.time }}</p>
-      <p>
-        <strong>Modification Allowed:</strong>
-        {% if retake.can_modify %} Yes {% else %} No {% endif %}
+      <h1>📋 Retake Summary</h1>
+
+      <div class="summary-detail">
+        <p>📅 <strong>Date:</strong> {{ retake.date }}</p>
+        <p>🕒 <strong>Time:</strong> {{ retake.time }}</p>
+      </div>
+
+      <div class="summary-detail">
+        <p>🔄 <strong>Modification Status:</strong></p>
+        <p class="status-indicator">
+          {% if retake.can_modify %} ✅ Available {% else %} ❌ Not Available {%
+          endif %}
+        </p>
+      </div>
+
+      <p class="summary-note">
+        Your retake is currently set to<br />
+        <span class="highlight">{{ retake.date }}</span> at<br />
+        <span class="highlight">{{ retake.time }}</span>
       </p>
-      <p>
-        Your retake is currently set to <em>{{ retake.date }}</em> at
-        <em>{{ retake.time }}</em>.
-      </p>
-      <a href="/schedule">Return to Schedule Page</a>
+
+      <a href="/schedule" class="nav-link">← Back to Scheduling</a>
     </div>
   </body>
 </html>

@@ -1,7 +1,5 @@
-# app/__init__.py
-
 from flask import Flask
-from .extensions import db, migrate
+from .extensions import db, migrate, cache
 from config.settings import DevelopmentConfig, ProductionConfig
 import os
 
@@ -16,6 +14,9 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
+
+    # Initialize cache with configuration. You can set the cache configuration here.
+    cache.init_app(app, config={'CACHE_TYPE': 'simple'})
 
     # Register blueprints, etc.
     from .routes import register_blueprints

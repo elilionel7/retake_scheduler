@@ -95,12 +95,33 @@
 
           <label>Select Class:</label>
           <select name="class_id" required>
-            {% for class in classes %}
-            <option value="{{ class.id }}">
-              {{ class.course_name }} - Section {{ class.section }}
+            {% for c in classes %}
+            <option value="{{ c.id }}">
+              {{ c.course_name }} - Section {{ c.section }}
             </option>
             {% endfor %}
           </select>
+
+          <!-- PAGINATION LINKS FOR CLASSES -->
+          <div class="pagination" style="margin-top: 1em">
+            {% if pagination.has_prev %}
+            <a
+              href="?page={{ pagination.prev_num }}&per_page={{ pagination.per_page }}"
+            >
+              Previous
+            </a>
+            {% endif %}
+
+            <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+
+            {% if pagination.has_next %}
+            <a
+              href="?page={{ pagination.next_num }}&per_page={{ pagination.per_page }}"
+            >
+              Next
+            </a>
+            {% endif %}
+          </div>
 
           <button type="submit">✨ Add Student</button>
         </form>
