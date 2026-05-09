@@ -1,175 +1,125 @@
-<!-- app/templates/manage_students.html -->
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Manage Students</title>
-    <style>
-      :root {
-        --primary: #a8d8ea;
-        --secondary: #f9b5ac;
-        --accent: #ee6c4d;
-        --text: #2b2d42;
-      }
-      body {
-        font-family: 'Comic Neue', cursive;
-        margin: 0;
-        padding: 20px;
-        background: var(--primary);
-      }
-      .container {
-        max-width: 1000px;
-        margin: 0 auto;
-      }
-      h1 {
-        color: var(--accent);
-        text-align: center;
-      }
-      .admin-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-      .admin-table th,
-      .admin-table td {
-        padding: 12px;
-        text-align: left;
-      }
-      .admin-table th {
-        background: var(--secondary);
-        color: white;
-      }
-      .admin-table tr:nth-child(even) {
-        background: #f9f9f9;
-      }
-      .form-inline {
-        display: inline-block;
-        margin: 0 2px;
-      }
-      .action-btn {
-        padding: 8px 15px;
-        border-radius: 15px;
-        border: none;
-        cursor: pointer;
-        transition: transform 0.2s;
-      }
-      .action-btn:hover {
-        transform: scale(1.05);
-      }
-      .authorize-btn {
-        background: #90ee90;
-        color: #2b2d42;
-      }
-      .deauthorize-btn {
-        background: #ffb6c1;
-        color: #2b2d42;
-      }
-      .search-bar {
-        margin: 20px 0;
-        padding: 10px;
-        width: 300px;
-        border: 2px solid var(--secondary);
-        border-radius: 20px;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-      }
-      .nav {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        margin: 20px 0;
-      }
-      .nav a {
-        padding: 10px 20px;
-        background: var(--secondary);
-        border-radius: 20px;
-        text-decoration: none;
-        color: var(--text);
-        transition: transform 0.3s;
-      }
-      .nav a:hover {
-        transform: scale(1.1);
-      }
-    </style>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <div class="container">
-      <h1>👩🏫 Manage Students</h1>
-      <div class="nav">
-        <a href="/">Home</a>
-        <a href="/schedule">Schedule</a>
-        <a href="/add-student">Add Student</a>
-      </div>
+{% extends 'base.html' %}
+{% block title %}Students — RetakeScheduler{% endblock %}
+{% block page_title %}All Students{% endblock %}
+{% block header_actions %}
+  <a href="/add-student" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">+ Add Student</a>
+{% endblock %}
 
-      <input
-        type="text"
-        class="search-bar"
-        placeholder="🔍 Search students..."
-      />
+{% block content %}
 
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Student ID</th>
-            <th>Name</th>
-            <th>Class</th>
-            <th>Authorized</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for student in students %}
-          <tr>
-            <td>{{ student.student_id }}</td>
-            <td>{{ student.name }}</td>
-            <td>
-              {{ student.assigned_class.course_name }} - {{
-              student.assigned_class.section }}
-            </td>
-            <td>{{ "✅ Yes" if student.is_authorized else "❌ No" }}</td>
-            <td>
-              <form method="POST" class="form-inline">
-                <input
-                  type="hidden"
-                  name="student_id"
-                  value="{{ student.student_id }}"
-                />
-                <button
-                  type="submit"
-                  name="action"
-                  value="authorize"
-                  class="action-btn authorize-btn"
-                >
+<!-- Search -->
+<div class="mb-5 max-w-xs">
+  <input type="text" id="q" oninput="filter()" placeholder="Search name or ID…"
+         class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+</div>
+
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm" id="tbl">
+      <thead>
+        <tr class="border-b border-slate-100">
+          <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">Student</th>
+          <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">Class</th>
+          <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">Status</th>
+          <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">Attempts</th>
+          <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">Deadline</th>
+          <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">Window</th>
+          <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-50">
+        {% for s in students %}
+        <tr class="hover:bg-slate-50 transition-colors" data-q="{{ s.student_id }} {{ s.name | lower }}">
+          <td class="px-5 py-3.5">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-semibold text-xs shrink-0">
+                {{ s.name[0] }}
+              </div>
+              <div>
+                <p class="font-medium text-slate-900">{{ s.name }}</p>
+                <p class="text-xs text-slate-400 font-mono">{{ s.student_id }}</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-5 py-3.5 text-slate-600">
+            {{ s.assigned_class.course_name }}
+            <span class="text-xs font-medium bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded ml-1">{{ s.assigned_class.section }}</span>
+          </td>
+          <td class="px-5 py-3.5">
+            {% if s.is_authorized %}
+              {% if s.deadline_passed %}
+                <span class="text-xs font-semibold bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full">Expired</span>
+              {% else %}
+                <span class="text-xs font-semibold bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full">Authorized</span>
+              {% endif %}
+            {% else %}
+              <span class="text-xs font-semibold bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full">Not authorized</span>
+            {% endif %}
+          </td>
+          <td class="px-5 py-3.5">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full border-2 {% if s.attempts_used >= 1 %}bg-red-500 border-red-500{% else %}border-slate-300{% endif %}"></span>
+              <span class="w-3 h-3 rounded-full border-2 {% if s.attempts_used >= 2 %}bg-red-500 border-red-500{% else %}border-slate-300{% endif %}"></span>
+              <span class="text-xs text-slate-400 ml-1">{{ s.attempts_used }}/2</span>
+            </div>
+          </td>
+          <td class="px-5 py-3.5 text-xs {% if s.deadline_passed %}text-red-600 font-semibold{% else %}text-slate-600{% endif %}">
+            {% if s.authorization_deadline %}{{ s.authorization_deadline }}{% else %}<span class="text-slate-300">—</span>{% endif %}
+          </td>
+          <td class="px-5 py-3.5">
+            <form method="POST" class="flex items-center gap-1.5">
+              <input type="hidden" name="student_id" value="{{ s.student_id }}" />
+              <input type="hidden" name="action" value="set_window" />
+              <input type="number" name="custom_window_days" min="1" max="30"
+                     value="{{ s.custom_window_days or s.assigned_class.window_days }}"
+                     class="w-14 border border-slate-200 rounded-lg px-2 py-1 text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <button type="submit"
+                      class="text-xs text-slate-400 hover:text-emerald-600 border border-slate-200 hover:border-emerald-300 px-2 py-1 rounded-lg transition-all">✓</button>
+            </form>
+          </td>
+          <td class="px-5 py-3.5">
+            <div class="flex gap-2">
+              {% if not s.is_authorized %}
+              <form method="POST">
+                <input type="hidden" name="student_id" value="{{ s.student_id }}" />
+                <button type="submit" name="action" value="authorize"
+                        class="text-xs font-medium bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg transition-all">
                   Authorize
                 </button>
               </form>
-              <form method="POST" class="form-inline">
-                <input
-                  type="hidden"
-                  name="student_id"
-                  value="{{ student.student_id }}"
-                />
-                <button
-                  type="submit"
-                  name="action"
-                  value="deauthorize"
-                  class="action-btn deauthorize-btn"
-                >
-                  Deauthorize
+              {% else %}
+              <form method="POST">
+                <input type="hidden" name="student_id" value="{{ s.student_id }}" />
+                <button type="submit" name="action" value="deauthorize"
+                        class="text-xs font-medium bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg transition-all">
+                  Revoke
                 </button>
               </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </body>
-</html>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="px-5 py-16 text-center text-slate-400">
+          <p class="text-3xl mb-2">👥</p>
+          <p class="font-medium text-slate-600">No students yet</p>
+          <a href="/add-student" class="text-sm text-blue-600 hover:underline mt-1 inline-block">Add your first student →</a>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filter() {
+  const q = document.getElementById('q').value.toLowerCase();
+  document.querySelectorAll('#tbl tbody tr[data-q]').forEach(r => {
+    r.style.display = r.dataset.q.includes(q) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

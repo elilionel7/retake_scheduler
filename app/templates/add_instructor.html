@@ -1,55 +1,44 @@
-<!-- app/templates/add_instructor.html -->
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Add Instructor</title>
-    <!-- Same styles as add_student.html -->
-    <style>
-      .error-message {
-        background: #ffe5e5;
-        color: #d8000c;
-        padding: 10px;
-        border-radius: 8px;
-        margin: 15px 0;
-      }
-    </style>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <div class="container">
-      <h1>👩🏫 Add New Instructor</h1>
-      <div class="nav">
-        <a href="/manage">← Back to Manage</a>
-      </div>
+{% extends 'base.html' %}
+{% block title %}Add Instructor — RetakeScheduler{% endblock %}
+{% block page_title %}Add Instructor{% endblock %}
+{% block header_actions %}
+  <a href="/dashboard" class="text-xs text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-300 bg-white px-3 py-1.5 rounded-lg transition-all">← Dashboard</a>
+{% endblock %}
 
-      <div class="form-card">
-        {% if error %}
-        <div class="error-message">{{ error }}</div>
-        {% endif %}
-
-        <form method="POST">
-          <label>Full Name:</label>
-          <input
-            type="text"
-            name="name"
-            required
-            placeholder="Instructor's name..."
-          />
-
-          <label>Email Address:</label>
-          <input
-            type="email"
-            name="email"
-            required
-            placeholder="example@university.edu"
-          />
-
-          <button type="submit">🎓 Add Instructor</button>
-        </form>
-      </div>
+{% block content %}
+<div class="max-w-md">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-5 border-b border-slate-100">
+      <h2 class="font-semibold text-slate-900">Instructor details</h2>
+      <p class="text-xs text-slate-400 mt-0.5">Instructors can be assigned to one or more classes.</p>
     </div>
-  </body>
-</html>
+    <form method="POST" class="px-6 py-5 flex flex-col gap-5">
+
+      {% if error %}
+      <div class="flex items-start gap-2.5 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+        <span class="shrink-0 mt-0.5">⚠️</span>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Full Name <span class="text-red-500">*</span></label>
+        <input type="text" name="name" required placeholder="e.g. Dr. Alice Smith"
+               class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Email Address <span class="text-red-500">*</span></label>
+        <input type="email" name="email" required placeholder="instructor@usm.edu"
+               class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+        <p class="text-xs text-slate-400 mt-1.5">Must be unique across all instructors.</p>
+      </div>
+
+      <button type="submit"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all text-sm mt-1">
+        Add Instructor
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

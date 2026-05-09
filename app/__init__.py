@@ -1,5 +1,5 @@
 from flask import Flask
-from .extensions import db, migrate, cache
+from .extensions import db, migrate, cache, mail, scheduler
 from config.settings import DevelopmentConfig, ProductionConfig
 import os
 
@@ -14,11 +14,14 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
-
-    # Initialize cache with configuration. You can set the cache configuration here.
     cache.init_app(app, config={'CACHE_TYPE': 'simple'})
+    mail.init_app(app)
 
-    # Register blueprints, etc.
+    from .scheduler_jobs import register_jobs
+    register_jobs(scheduler)
+    scheduler.init_app(app)
+    scheduler.start()
+
     from .routes import register_blueprints
     register_blueprints(app)
 

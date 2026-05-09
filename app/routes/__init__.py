@@ -1,5 +1,3 @@
-# app/routes/__init__.py
-
 from .instructor_routes import instructor_bp
 from .manage_student_routes import manage_student_bp
 from .student_routes import student_bp
@@ -7,9 +5,11 @@ from .class_routes import class_bp
 from .schedule_routes import schedule_bp
 from .populate_schedule_routes import populate_schedule_bp
 from .home_routes import home_bp
+from .slot_routes import slot_bp
+from .attendance_routes import attendance_bp
+
 
 def register_blueprints(app):
-    """Register all blueprint objects with the Flask app."""
     app.register_blueprint(home_bp)
     app.register_blueprint(instructor_bp)
     app.register_blueprint(student_bp)
@@ -17,3 +17,5 @@ def register_blueprints(app):
     app.register_blueprint(class_bp)
     app.register_blueprint(schedule_bp)
     app.register_blueprint(populate_schedule_bp)
+    app.register_blueprint(slot_bp)
+    app.register_blueprint(attendance_bp)

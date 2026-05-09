@@ -4,15 +4,29 @@ from app.models import Class, Instructor
 
 class_bp = Blueprint('class', __name__)
 
+
 @class_bp.route('/add-class', methods=['GET', 'POST'])
 def add_class():
     if request.method == 'POST':
         course_name = request.form['course_name']
         section = request.form['section']
         instructor_id = request.form['instructor_id']
-        new_class = Class(course_name=course_name, section=section, instructor_id=instructor_id)
+        try:
+            window_days = int(request.form.get('window_days', 5))
+            if window_days < 1:
+                window_days = 5
+        except ValueError:
+            window_days = 5
+
+        new_class = Class(
+            course_name=course_name,
+            section=section,
+            instructor_id=instructor_id,
+            window_days=window_days,
+        )
         db.session.add(new_class)
         db.session.commit()
         return redirect(url_for('home-bp.home'))
+
     instructors = Instructor.query.all()
     return render_template('add_class.html', instructors=instructors)

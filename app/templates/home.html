@@ -1,63 +1,64 @@
-<!-- app/templates/home.html -->
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Mat 101 Retake Scheduler!</title>
-    <style>
-      :root {
-        --primary: #a8d8ea;
-        --secondary: #f9b5ac;
-        --accent: #ee6c4d;
-        --text: #2b2d42;
-      }
-      body {
-        font-family: 'Comic Neue', cursive;
-        margin: 0;
-        padding: 20px;
-        background: var(--primary);
-      }
-      .container {
-        max-width: 800px;
-        margin: 0 auto;
-        text-align: center;
-      }
-      h1 {
-        color: var(--accent);
-        font-size: 2.5em;
-        margin-bottom: 20px;
-      }
-      .nav {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        margin: 20px 0;
-      }
-      .nav a {
-        padding: 10px 20px;
-        background: var(--secondary);
-        border-radius: 20px;
-        text-decoration: none;
-        color: var(--text);
-        transition: transform 0.3s;
-      }
-      .nav a:hover {
-        transform: scale(1.1);
-      }
-      .mascot {
-        font-size: 100px;
-        margin: 20px 0;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="mascot">🎓</div>
-      <h1>Welcome to Mat 101 Retake Scheduler!</h1>
-      <p>Let's make test rescheduling stress-free! 🍰</p>
-      <div class="nav">
-        <a href="/schedule">Schedule Now</a>
-        <a href="/manage-students">Manage Students</a>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RetakeScheduler — USM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center gap-3">
+      <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-sm">R</div>
+      <div>
+        <p class="font-semibold text-slate-900 text-sm leading-none">RetakeScheduler</p>
+        <p class="text-xs text-slate-400 mt-0.5">University of Southern Mississippi</p>
       </div>
     </div>
-  </body>
+  </header>
+
+  <!-- Hero -->
+  <main class="flex-1 flex flex-col items-center justify-center px-6 py-16">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-slate-900 mb-3">Welcome back</h1>
+      <p class="text-slate-500 text-base">Select your role to continue to the right portal.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-2xl">
+
+      <!-- Student card -->
+      <a href="/schedule"
+         class="group bg-white border-2 border-slate-200 hover:border-blue-500 hover:shadow-lg rounded-2xl p-8 flex flex-col transition-all duration-200">
+        <div class="w-14 h-14 bg-blue-50 group-hover:bg-blue-100 rounded-2xl flex items-center justify-center text-3xl mb-5 transition-colors">🎓</div>
+        <h2 class="text-lg font-bold text-slate-900 mb-1.5">I'm a Student</h2>
+        <p class="text-sm text-slate-500 flex-1 leading-relaxed">
+          Schedule, modify, or cancel your retake appointment. Check your booking status and deadline.
+        </p>
+        <div class="mt-6 flex items-center gap-1.5 text-sm font-semibold text-blue-600 group-hover:gap-3 transition-all">
+          Go to Student Portal <span>→</span>
+        </div>
+      </a>
+
+      <!-- Admin card -->
+      <a href="/dashboard"
+         class="group bg-slate-900 border-2 border-slate-900 hover:border-slate-700 hover:shadow-lg rounded-2xl p-8 flex flex-col transition-all duration-200">
+        <div class="w-14 h-14 bg-slate-800 group-hover:bg-slate-700 rounded-2xl flex items-center justify-center text-3xl mb-5 transition-colors">🏫</div>
+        <h2 class="text-lg font-bold text-white mb-1.5">I'm an Instructor / LA</h2>
+        <p class="text-sm text-slate-400 flex-1 leading-relaxed">
+          Manage students, authorize retakes, mark attendance, and configure schedule slots.
+        </p>
+        <div class="mt-6 flex items-center gap-1.5 text-sm font-semibold text-slate-300 group-hover:text-white group-hover:gap-3 transition-all">
+          Go to Admin Portal <span>→</span>
+        </div>
+      </a>
+    </div>
+  </main>
+
+  <footer class="text-center py-6 text-xs text-slate-400">
+    USM Academic Affairs · RetakeScheduler v2
+  </footer>
+
+</body>
 </html>

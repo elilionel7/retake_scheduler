@@ -1,235 +1,369 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Schedule Retake</title>
-    <style>
-      :root {
-        --primary: #a8d8ea;
-        --secondary: #f9b5ac;
-        --accent: #ee6c4d;
-        --text: #2b2d42;
-      }
-      body {
-        font-family: 'Comic Neue', cursive;
-        margin: 0;
-        padding: 20px;
-        background: var(--primary);
-        min-height: 100vh;
-      }
-      .container {
-        max-width: 800px;
-        margin: 0 auto;
-        position: relative;
-      }
-      h1 {
-        color: var(--accent);
-        text-align: center;
-        margin-bottom: 2rem;
-        font-size: 2.5em;
-      }
-      .form-section {
-        background: white;
-        padding: 25px;
-        border-radius: 15px;
-        margin: 2rem auto;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-      label {
-        display: block;
-        margin: 1rem 0 0.5rem;
-        color: var(--text);
-        font-weight: 700;
-      }
-      input,
-      select {
-        width: 100%;
-        padding: 12px;
-        border: 2px solid var(--secondary);
-        border-radius: 8px;
-        font-size: 16px;
-        transition: border-color 0.3s;
-      }
-      input:focus,
-      select:focus {
-        border-color: var(--accent);
-        outline: none;
-      }
-      button {
-        background: var(--accent);
-        color: white;
-        border: none;
-        padding: 12px 30px;
-        border-radius: 25px;
-        margin-top: 1.5rem;
-        cursor: pointer;
-        font-size: 16px;
-        width: 100%;
-        transition: transform 0.3s, opacity 0.3s;
-      }
-      button:hover:not(:disabled) {
-        transform: translateY(-2px);
-        opacity: 0.9;
-      }
-      button:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-      }
-      .slot-info {
-        font-size: 0.9em;
-        color: #666;
-        display: block;
-        margin-top: 0.25rem;
-      }
-      .loading {
-        position: relative;
-        pointer-events: none;
-      }
-      .loading::after {
-        content: '';
-        position: absolute;
-        right: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(255, 255, 255, 0.3);
-        border-top-color: white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        to {
-          transform: translateY(-50%) rotate(360deg);
-        }
-      }
-    </style>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <div class="container">
-      <h1>📅 Schedule Your Retake</h1>
+{% extends 'base_student.html' %}
+{% block title %}Schedule Retake — RetakeScheduler{% endblock %}
 
-      <!-- Book New Appointment Form -->
-      <div class="form-section">
-        <h2>🎯 Book New Appointment</h2>
-        <form method="POST">
-          <label>Your Student ID:</label>
-          <input
-            type="text"
-            name="student_id"
-            required
-            placeholder="Enter your student ID..."
-          />
+{% block content %}
+<div x-data="scheduler()" x-init="init()" x-cloak>
 
-          <label>Choose Time Slot:</label>
-          <select name="schedule_id" required>
-            {% for slot in available_slots %}
-            <option value="{{ slot.id }}">
-              {{ slot.date }} at {{ slot.time }}
-              <span class="slot-info"
-                >(🕑 {{ slot.time }}, {{ slot.current_bookings }}/{{
-                slot.max_capacity }} slots left)</span
-              >
-            </option>
-            {% endfor %}
-          </select>
-          <div class="pagination-links" style="margin-top: 1rem">
-            {% if pagination.has_prev %}
-            <a
-              href="?page={{ pagination.prev_num }}&per_page={{ pagination.per_page }}"
-              >Previous</a
-            >
-            {% endif %} {% if pagination.has_next %}
-            <a
-              href="?page={{ pagination.next_num }}&per_page={{ pagination.per_page }}"
-              >Next</a
-            >
-            {% endif %}
+  <!-- Step indicator -->
+  <div class="flex items-center gap-2 mb-8">
+    <template x-for="(label, i) in ['Enter ID', 'Pick a Slot', 'Confirmed']" :key="i">
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2">
+          <div :class="step > i+1 ? 'bg-emerald-500 text-white' : step === i+1 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'"
+               class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all">
+            <span x-show="step > i+1">✓</span>
+            <span x-show="step <= i+1" x-text="i+1"></span>
           </div>
-          <button type="submit">📅 Confirm Booking</button>
-        </form>
+          <span :class="step === i+1 ? 'text-slate-900 font-semibold' : 'text-slate-400'"
+                class="text-xs transition-colors" x-text="label"></span>
+        </div>
+        <div x-show="i < 2" class="w-8 h-px bg-slate-200 mx-1"></div>
+      </div>
+    </template>
+  </div>
+
+  <!-- ── Step 1: ID Lookup ── -->
+  <div x-show="step === 1" x-transition>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+      <h2 class="text-xl font-bold text-slate-900 mb-1.5">What's your Student ID?</h2>
+      <p class="text-sm text-slate-500 mb-6">We'll look up your eligibility and any existing bookings.</p>
+
+      <div class="flex gap-3">
+        <input
+          x-model="sid"
+          @keydown.enter="lookup()"
+          type="text"
+          placeholder="e.g. 1001"
+          class="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+        />
+        <button
+          @click="lookup()"
+          :disabled="loading || !sid.trim()"
+          class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2"
+        >
+          <svg x-show="loading" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+          </svg>
+          <span x-text="loading ? 'Looking up…' : 'Continue'"></span>
+        </button>
       </div>
 
-      <div class="form-section">
-        <h2>✏️ Reschedule Appointment</h2>
-        <form id="modify-form">
-          <label>Your Student ID:</label>
-          <input
-            type="text"
-            id="mod_student_id"
-            required
-            placeholder="Enter your student ID..."
-          />
+      <!-- Error -->
+      <div x-show="error" x-transition
+           class="mt-4 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+        <span class="shrink-0 mt-0.5">⚠️</span>
+        <span x-text="error"></span>
+      </div>
+    </div>
+  </div>
 
-          <label>New Time Slot:</label>
-          <select id="new_schedule_id" required>
-            {% for slot in available_slots %}
-            <option value="{{ slot.id }}">
-              {{ slot.date }} at {{ slot.time }}
-              <span class="slot-info"
-                >({{ slot.current_bookings }}/{{ slot.max_capacity }} slots
-                left)</span
-              >
-            </option>
-            {% endfor %}
-          </select>
-          <button type="submit">🔄 Update Schedule</button>
-        </form>
+  <!-- ── Step 2a: Existing Booking ── -->
+  <div x-show="step === 2 && student && student.existing_retake" x-transition>
+
+    <!-- Student status banner -->
+    <div class="mb-4 bg-white rounded-2xl border border-slate-200 shadow-sm px-5 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm" x-text="student && student.name ? student.name[0] : '?'"></div>
+        <div>
+          <p class="font-semibold text-slate-900 text-[13px]" x-text="student && student.name"></p>
+          <p class="text-xs text-slate-400" x-text="'ID: ' + sid"></p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-right">
+        <div x-show="student && student.deadline" class="text-right">
+          <p class="text-[10px] text-slate-400 uppercase tracking-wide">Deadline</p>
+          <p class="text-xs font-semibold" :class="student && student.deadline_passed ? 'text-red-600' : 'text-slate-700'" x-text="student && student.deadline"></p>
+        </div>
+        <div class="text-right">
+          <p class="text-[10px] text-slate-400 uppercase tracking-wide">Attempts</p>
+          <div class="flex items-center gap-1 justify-end mt-0.5">
+            <span class="w-3 h-3 rounded-full border-2" :class="student && student.attempts_used >= 1 ? 'bg-red-500 border-red-500' : 'border-slate-300'"></span>
+            <span class="w-3 h-3 rounded-full border-2" :class="student && student.attempts_used >= 2 ? 'bg-red-500 border-red-500' : 'border-slate-300'"></span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <script>
-      document
-        .getElementById('modify-form')
-        .addEventListener('submit', async function (e) {
-          e.preventDefault();
-          const form = e.target;
-          const button = form.querySelector('button[type="submit"]');
-          const studentId = document
-            .getElementById('mod_student_id')
-            .value.trim();
-          const newScheduleId =
-            document.getElementById('new_schedule_id').value;
+    <!-- Current booking card -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-4">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 class="font-semibold text-slate-900">Your Current Booking</h2>
+        <span class="text-xs font-medium text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full">Scheduled</span>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="bg-slate-50 rounded-xl p-4">
+            <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Date</p>
+            <p class="text-2xl font-bold text-slate-900" x-text="student && student.existing_retake && student.existing_retake.date"></p>
+          </div>
+          <div class="bg-slate-50 rounded-xl p-4">
+            <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Time</p>
+            <p class="text-2xl font-bold text-slate-900" x-text="student && student.existing_retake && student.existing_retake.time"></p>
+          </div>
+        </div>
 
-          if (!studentId || !newScheduleId) {
-            alert('Please fill out all fields.');
-            return;
-          }
+        <div class="flex flex-col gap-2.5">
+          <button
+            @click="showModify = !showModify"
+            :disabled="student && student.existing_retake && !student.existing_retake.can_modify"
+            :title="student && student.existing_retake && !student.existing_retake.can_modify ? 'You have already used your one-time modification.' : ''"
+            class="w-full border border-slate-200 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 hover:text-blue-700 font-medium py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm"
+          >
+            ✏️ <span x-text="showModify ? 'Cancel Change' : 'Change Slot'"></span>
+            <span x-show="student && student.existing_retake && !student.existing_retake.can_modify" class="text-xs text-slate-400">(used)</span>
+          </button>
+          <button
+            @click="cancelBooking()"
+            class="w-full border border-red-200 hover:bg-red-50 text-red-600 font-medium py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm"
+          >
+            ✕ Cancel Booking
+          </button>
+        </div>
+      </div>
 
-          try {
-            button.disabled = true;
-            button.classList.add('loading');
+      <!-- Modify slot picker -->
+      <div x-show="showModify" x-transition class="border-t border-slate-100 px-6 py-5">
+        <p class="text-sm text-slate-500 mb-4">
+          Select a new slot. <strong class="text-slate-700">This can only be done once.</strong>
+        </p>
+        <div id="modify-grid"></div>
+        <div class="mt-5 flex gap-2.5">
+          <button
+            @click="submitModify()"
+            :disabled="!modifySlotId"
+            class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-xl transition-all text-sm"
+          >Confirm New Slot</button>
+          <button @click="showModify = false" class="px-4 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl transition-all text-sm">Cancel</button>
+        </div>
+      </div>
+    </div>
 
-            const response = await fetch('/schedule/modify', {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                student_id: studentId,
-                new_schedule_id: newScheduleId,
-              }),
-            });
+    <button @click="step = 1; student = null; error = ''" class="text-sm text-slate-400 hover:text-slate-600 transition-colors">← Look up a different ID</button>
+  </div>
 
-            const data = await response.json();
+  <!-- ── Step 2b: New Booking ── -->
+  <div x-show="step === 2 && student && !student.existing_retake" x-transition>
 
-            if (response.ok) {
-              alert(
-                `✅ Success!\n${data.message}\nNew time: ${data.new_date} at ${data.new_time}`
-              );
-              window.location.href = `/schedule/summary?student_id=${studentId}`;
-            } else {
-              alert(`❌ Error: ${data.error || 'Unknown error occurred'}`);
-            }
-          } catch (error) {
-            console.error('Error:', error);
-            alert('⚠️ Network error - Please check your connection');
-          } finally {
-            button.disabled = false;
-            button.classList.remove('loading');
-          }
+    <!-- Student status banner -->
+    <div class="mb-4 bg-white rounded-2xl border border-slate-200 shadow-sm px-5 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm" x-text="student && student.name ? student.name[0] : '?'"></div>
+        <div>
+          <p class="font-semibold text-slate-900 text-[13px]" x-text="student && student.name"></p>
+          <p class="text-xs text-slate-400" x-text="'ID: ' + sid"></p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div x-show="student && student.deadline" class="text-right">
+          <p class="text-[10px] text-slate-400 uppercase tracking-wide">Deadline</p>
+          <p class="text-xs font-semibold" :class="student && student.deadline_passed ? 'text-red-600' : 'text-emerald-600'" x-text="student && student.deadline"></p>
+        </div>
+        <div class="text-right">
+          <p class="text-[10px] text-slate-400 uppercase tracking-wide">Attempts</p>
+          <div class="flex items-center gap-1 justify-end mt-0.5">
+            <span class="w-3 h-3 rounded-full border-2" :class="student && student.attempts_used >= 1 ? 'bg-red-500 border-red-500' : 'border-slate-300'"></span>
+            <span class="w-3 h-3 rounded-full border-2" :class="student && student.attempts_used >= 2 ? 'bg-red-500 border-red-500' : 'border-slate-300'"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100">
+        <h2 class="font-semibold text-slate-900">Choose a Time Slot</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Click a slot to select it, then confirm below.</p>
+      </div>
+      <div class="p-6">
+        <!-- Slots rendered by JS -->
+        <div id="new-booking-grid"></div>
+
+        <!-- Pagination -->
+        {% if pagination.has_prev or pagination.has_next %}
+        <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
+          <a href="?page={{ pagination.prev_num }}&per_page={{ pagination.per_page }}"
+             class="{% if not pagination.has_prev %}pointer-events-none opacity-30{% endif %} text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1">
+            ← Prev
+          </a>
+          <span class="text-xs text-slate-400">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+          <a href="?page={{ pagination.next_num }}&per_page={{ pagination.per_page }}"
+             class="{% if not pagination.has_next %}pointer-events-none opacity-30{% endif %} text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1">
+            Next →
+          </a>
+        </div>
+        {% endif %}
+
+        <div class="border-t border-slate-100 mt-6 pt-5 flex gap-3">
+          <button
+            @click="bookSlot()"
+            :disabled="!selectedSlotId || booking"
+            class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+          >
+            <svg x-show="booking" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+            <span x-text="booking ? 'Booking…' : selectedSlotId ? 'Confirm Booking' : 'Select a slot to continue'"></span>
+          </button>
+          <button @click="step = 1; student = null; error = ''" class="px-4 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl transition-all text-sm">Back</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Step 3: Confirmed ── -->
+  <div x-show="step === 3" x-transition class="text-center py-12">
+    <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">✓</div>
+    <h2 class="text-2xl font-bold text-slate-900 mb-2">You're all set!</h2>
+    <p class="text-slate-500 text-sm mb-6">A confirmation email was sent to <strong x-text="sid + '@usm.edu'"></strong>. You'll get a reminder 24 hours before.</p>
+    <a :href="'/schedule/summary?student_id=' + sid"
+       class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-all">
+      View Booking Details →
+    </a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const SLOT_DATA = [
+  {% for slot in available_slots %}
+  { id: {{ slot.id }}, date: "{{ slot.date }}", time: "{{ slot.time }}", available: {{ slot.max_capacity - slot.current_bookings }} },
+  {% endfor %}
+];
+
+function fmtDate(d) {
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+function buildSlotGrid(slots, containerId, onSelect) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  const groups = {};
+  slots.forEach(s => { (groups[s.date] = groups[s.date] || []).push(s); });
+
+  Object.entries(groups).forEach(([date, items]) => {
+    const label = document.createElement('p');
+    label.className = 'text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2.5 mt-4 first:mt-0';
+    label.textContent = fmtDate(date);
+    container.appendChild(label);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid grid-cols-3 gap-2.5';
+    items.forEach(slot => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.dataset.id = slot.id;
+      card.className = 'slot-card border-2 border-slate-200 rounded-xl p-3 text-left hover:border-blue-400 hover:bg-blue-50 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500';
+      card.innerHTML = `<p class="text-base font-bold text-slate-900">${slot.time}</p>
+                        <p class="text-xs text-slate-400 mt-0.5">${slot.available} spot${slot.available !== 1 ? 's' : ''} left</p>`;
+      card.addEventListener('click', () => {
+        document.querySelectorAll(`#${containerId} .slot-card`).forEach(c => {
+          c.classList.remove('border-blue-500', 'bg-blue-50', 'ring-2', 'ring-blue-200');
         });
-    </script>
-  </body>
-</html>
+        card.classList.add('border-blue-500', 'bg-blue-50', 'ring-2', 'ring-blue-200');
+        onSelect(slot.id);
+      });
+      grid.appendChild(card);
+    });
+    container.appendChild(grid);
+  });
+}
+
+function scheduler() {
+  return {
+    step: 1,
+    sid: '',
+    student: null,
+    loading: false,
+    error: '',
+    selectedSlotId: null,
+    booking: false,
+    showModify: false,
+    modifySlotId: null,
+
+    init() {
+      const params = new URLSearchParams(window.location.search);
+      const sid = params.get('student_id');
+      if (sid) { this.sid = sid; this.lookup(); }
+    },
+
+    async lookup() {
+      if (!this.sid.trim()) return;
+      this.loading = true;
+      this.error = '';
+      try {
+        const res = await fetch(`/schedule/status?student_id=${encodeURIComponent(this.sid.trim())}`);
+        const data = await res.json();
+        if (!res.ok) { this.error = data.error || 'Student not found.'; return; }
+        if (!data.authorized) { this.error = 'You are not authorized for a retake. Please contact your instructor.'; return; }
+        if (data.deadline_passed) { this.error = 'Your retake window has expired. Please contact your instructor.'; return; }
+        if (data.attempts_used >= 2) { this.error = 'You have used all of your allowed retake attempts.'; return; }
+        this.student = data;
+        this.step = 2;
+        this.$nextTick(() => {
+          buildSlotGrid(SLOT_DATA, 'new-booking-grid', id => { this.selectedSlotId = id; });
+          buildSlotGrid(SLOT_DATA, 'modify-grid', id => { this.modifySlotId = id; });
+        });
+      } catch(e) {
+        this.error = 'Network error. Please try again.';
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async bookSlot() {
+      if (!this.selectedSlotId || !this.sid) return;
+      this.booking = true;
+      const fd = new FormData();
+      fd.append('student_id', this.sid.trim());
+      fd.append('schedule_id', this.selectedSlotId);
+      const res = await fetch('/schedule', { method: 'POST', body: fd });
+      const text = await res.text();
+      if (res.ok) {
+        this.step = 3;
+      } else {
+        showToast(text || 'Booking failed. Please try again.', 'error');
+      }
+      this.booking = false;
+    },
+
+    async cancelBooking() {
+      if (!confirm('Cancel your retake? You can rebook any time before your deadline — no penalty.')) return;
+      const res = await fetch('/schedule/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id: this.sid.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        this.student = { ...this.student, existing_retake: null };
+        showToast('Booking cancelled. You may rebook before your deadline.', 'success');
+        this.$nextTick(() => buildSlotGrid(SLOT_DATA, 'new-booking-grid', id => { this.selectedSlotId = id; }));
+      } else {
+        showToast(data.error || 'Cancellation failed.', 'error');
+      }
+    },
+
+    async submitModify() {
+      if (!this.modifySlotId || !this.sid) return;
+      const res = await fetch('/schedule/modify', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id: this.sid.trim(), new_schedule_id: this.modifySlotId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Slot updated!', 'success');
+        setTimeout(() => window.location.href = `/schedule/summary?student_id=${this.sid.trim()}`, 1000);
+      } else {
+        showToast(data.error || 'Could not update slot.', 'error');
+      }
+    },
+  };
+}
+</script>
+{% endblock %}

@@ -44,4 +44,4 @@ fi
 
 # Start your Flask app with Gunicorn
 echo "Starting the Flask app..."
-exec gunicorn wsgi:app --bind 0.0.0.0:8000
+exec gunicorn wsgi:app --bind 0.0.0.0:8000 --workers 1 --timeout 120 --preload
