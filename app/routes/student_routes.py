@@ -1,10 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for
+from flask_login import login_required
 from app import db
 from app.models import Student, Class
 
 student_bp = Blueprint("student", __name__)
 
 @student_bp.route("/add-student", methods=["GET", "POST"])
+@login_required
 def add_student():
     if request.method == "POST":
         name = request.form["name"]

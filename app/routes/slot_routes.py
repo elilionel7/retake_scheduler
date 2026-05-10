@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request, render_template
+from flask_login import login_required
 from app import db
 from app.models import RetakeSchedule
 from datetime import date
@@ -7,6 +8,7 @@ slot_bp = Blueprint("slots", __name__)
 
 
 @slot_bp.route("/slots")
+@login_required
 def slots_page():
     slots = (
         RetakeSchedule.query
@@ -18,6 +20,7 @@ def slots_page():
 
 
 @slot_bp.route("/slots/<int:slot_id>/capacity", methods=["PATCH"])
+@login_required
 def update_capacity(slot_id):
     """Instructor updates the max capacity of a slot."""
     if not request.is_json:

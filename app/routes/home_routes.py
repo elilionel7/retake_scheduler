@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template
+from flask_login import login_required
 from app.extensions import db
 from app.models import Student, Retake, RetakeSchedule
 from datetime import date
@@ -10,6 +11,7 @@ def home():
     return render_template('home.html')
 
 @home_bp.route('/dashboard')
+@login_required
 def dashboard():
     total_students    = Student.query.count()
     authorized_count  = Student.query.filter_by(is_authorized=True).count()

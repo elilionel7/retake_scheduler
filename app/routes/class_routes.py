@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for
+from flask_login import login_required
 from app import db
 from app.models import Class, Instructor
 
@@ -6,6 +7,7 @@ class_bp = Blueprint('class', __name__)
 
 
 @class_bp.route('/add-class', methods=['GET', 'POST'])
+@login_required
 def add_class():
     if request.method == 'POST':
         course_name = request.form['course_name']

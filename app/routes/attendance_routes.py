@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request, render_template
+from flask_login import login_required
 from app import db
 from app.models import Retake, Student
 from app.email_utils import send_ineligible_notice
@@ -7,6 +8,7 @@ attendance_bp = Blueprint("attendance", __name__)
 
 
 @attendance_bp.route("/sessions")
+@login_required
 def sessions():
     from datetime import date, timedelta
     today = date.today().strftime('%Y-%m-%d')
@@ -29,6 +31,7 @@ def sessions():
 
 
 @attendance_bp.route("/attendance", methods=["POST"])
+@login_required
 def mark_attendance():
     """
     Instructor marks a retake as attended or no_show.

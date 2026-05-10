@@ -7,9 +7,11 @@ from .populate_schedule_routes import populate_schedule_bp
 from .home_routes import home_bp
 from .slot_routes import slot_bp
 from .attendance_routes import attendance_bp
+from .auth_routes import auth_bp
 
 
 def register_blueprints(app):
+    app.register_blueprint(auth_bp)
     app.register_blueprint(home_bp)
     app.register_blueprint(instructor_bp)
     app.register_blueprint(student_bp)

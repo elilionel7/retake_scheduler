@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for
+from flask_login import login_required
 from datetime import date
 from app import db
 from app.models import Student
@@ -8,6 +9,7 @@ manage_student_bp = Blueprint('manage-students', __name__)
 
 
 @manage_student_bp.route('/manage-students', methods=['GET', 'POST'])
+@login_required
 def manage_students():
     if request.method == 'POST':
         student_id = request.form['student_id']

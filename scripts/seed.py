@@ -30,8 +30,11 @@ def seed_data():
         # Create Instructors
         # ---------------------------
         instructor1 = Instructor(name="Dr. Alice Smith", email="alice.smith@example.com")
+        instructor1.set_password("changeme123")
         instructor2 = Instructor(name="Prof. Bob Johnson", email="bob.johnson@example.com")
+        instructor2.set_password("changeme123")
         instructor3 = Instructor(name="Dr. Carol Williams", email="carol.williams@example.com")
+        instructor3.set_password("changeme123")
 
         db.session.add_all([instructor1, instructor2, instructor3])
         db.session.commit()
