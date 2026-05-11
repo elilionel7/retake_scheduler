@@ -35,9 +35,8 @@ flask db upgrade || error_exit "Error applying database migrations"
 if [ ! -f "seeded" ]; then
   echo "Seeding the database with sample data..."
   python scripts/seed.py || error_exit "Failed to seed the database."
-
-  # Create a file to indicate seeding is done
-  echo "Database seeded." 
+  touch seeded
+  echo "Database seeded."
 else
   echo "Database already seeded. Skipping seeding."
 fi

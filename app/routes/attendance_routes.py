@@ -14,12 +14,14 @@ def sessions():
     today = date.today().strftime('%Y-%m-%d')
     cutoff = (date.today() - timedelta(days=30)).strftime('%Y-%m-%d')
 
-    upcoming = (
-        Retake.query
-        .filter_by(status="scheduled")
-        .order_by(Retake.date, Retake.time)
-        .all()
-    )
+    date_filter = request.args.get('date', '').strip()
+
+    upcoming_query = Retake.query.filter_by(status="scheduled").order_by(Retake.date, Retake.time)
+    if date_filter:
+        upcoming_query = upcoming_query.filter(Retake.date == date_filter)
+
+    upcoming = upcoming_query.all()
+
     past = (
         Retake.query
         .filter(Retake.status.in_(["attended", "no_show"]))
@@ -27,16 +29,28 @@ def sessions():
         .order_by(Retake.date.desc(), Retake.time.desc())
         .all()
     )
-    return render_template("sessions.html", upcoming=upcoming, past=past)
+
+    # Distinct upcoming dates for the filter chips
+    all_upcoming_dates = (
+        db.session.query(Retake.date)
+        .filter_by(status="scheduled")
+        .distinct()
+        .order_by(Retake.date)
+        .all()
+    )
+    upcoming_dates = [r.date for r in all_upcoming_dates]
+
+    return render_template("sessions.html",
+                           upcoming=upcoming,
+                           past=past,
+                           today=today,
+                           date_filter=date_filter,
+                           upcoming_dates=upcoming_dates)
 
 
 @attendance_bp.route("/attendance", methods=["POST"])
 @login_required
 def mark_attendance():
-    """
-    Instructor marks a retake as attended or no_show.
-    Expects JSON: { "retake_id": int, "status": "attended" | "no_show" }
-    """
     if not request.is_json:
         return jsonify({"error": "Expected JSON data"}), 400
 

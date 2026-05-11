@@ -139,7 +139,7 @@
       </div>
     </div>
 
-    <button @click="step = 1; student = null; error = ''" class="text-sm text-slate-400 hover:text-slate-600 transition-colors">← Look up a different ID</button>
+    <button @click="step = 1; student = null; slots = []; error = ''" class="text-sm text-slate-400 hover:text-slate-600 transition-colors">← Look up a different ID</button>
   </div>
 
   <!-- ── Step 2b: New Booking ── -->
@@ -178,21 +178,6 @@
         <!-- Slots rendered by JS -->
         <div id="new-booking-grid"></div>
 
-        <!-- Pagination -->
-        {% if pagination.has_prev or pagination.has_next %}
-        <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-          <a href="?page={{ pagination.prev_num }}&per_page={{ pagination.per_page }}"
-             class="{% if not pagination.has_prev %}pointer-events-none opacity-30{% endif %} text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1">
-            ← Prev
-          </a>
-          <span class="text-xs text-slate-400">Page {{ pagination.page }} of {{ pagination.pages }}</span>
-          <a href="?page={{ pagination.next_num }}&per_page={{ pagination.per_page }}"
-             class="{% if not pagination.has_next %}pointer-events-none opacity-30{% endif %} text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1">
-            Next →
-          </a>
-        </div>
-        {% endif %}
-
         <div class="border-t border-slate-100 mt-6 pt-5 flex gap-3">
           <button
             @click="bookSlot()"
@@ -205,7 +190,7 @@
             </svg>
             <span x-text="booking ? 'Booking…' : selectedSlotId ? 'Confirm Booking' : 'Select a slot to continue'"></span>
           </button>
-          <button @click="step = 1; student = null; error = ''" class="px-4 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl transition-all text-sm">Back</button>
+          <button @click="step = 1; student = null; slots = []; error = ''" class="px-4 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl transition-all text-sm">Back</button>
         </div>
       </div>
     </div>
@@ -227,11 +212,6 @@
 
 {% block scripts %}
 <script>
-const SLOT_DATA = [
-  {% for slot in available_slots %}
-  { id: {{ slot.id }}, date: "{{ slot.date }}", time: "{{ slot.time }}", available: {{ slot.max_capacity - slot.current_bookings }} },
-  {% endfor %}
-];
 
 function fmtDate(d) {
   return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -278,6 +258,7 @@ function scheduler() {
     step: 1,
     sid: '',
     student: null,
+    slots: [],
     loading: false,
     error: '',
     selectedSlotId: null,
@@ -303,10 +284,11 @@ function scheduler() {
         if (data.deadline_passed) { this.error = 'Your retake window has expired. Please contact your instructor.'; return; }
         if (data.attempts_used >= 2) { this.error = 'You have used all of your allowed retake attempts.'; return; }
         this.student = data;
+        this.slots = data.available_slots || [];
         this.step = 2;
         this.$nextTick(() => {
-          buildSlotGrid(SLOT_DATA, 'new-booking-grid', id => { this.selectedSlotId = id; });
-          buildSlotGrid(SLOT_DATA, 'modify-grid', id => { this.modifySlotId = id; });
+          buildSlotGrid(this.slots, 'new-booking-grid', id => { this.selectedSlotId = id; });
+          buildSlotGrid(this.slots, 'modify-grid', id => { this.modifySlotId = id; });
         });
       } catch(e) {
         this.error = 'Network error. Please try again.';
@@ -342,7 +324,7 @@ function scheduler() {
       if (res.ok) {
         this.student = { ...this.student, existing_retake: null };
         showToast('Booking cancelled. You may rebook before your deadline.', 'success');
-        this.$nextTick(() => buildSlotGrid(SLOT_DATA, 'new-booking-grid', id => { this.selectedSlotId = id; }));
+        this.$nextTick(() => buildSlotGrid(this.slots, 'new-booking-grid', id => { this.selectedSlotId = id; }));
       } else {
         showToast(data.error || 'Cancellation failed.', 'error');
       }

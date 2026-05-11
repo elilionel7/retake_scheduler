@@ -4,49 +4,78 @@
 {% block header_actions %}
   <a href="/populate-schedule"
      class="text-xs font-medium text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 bg-white px-3 py-1.5 rounded-lg transition-all">
-    ⚙️ Generate New Slots
+    ⚙️ Generate Slots
+  </a>
+  <a href="/slots/add"
+     class="text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition-all">
+    + Add Slot
   </a>
 {% endblock %}
 
 {% block content %}
 
-{% if not slots %}
+<!-- Class filter chips -->
+{% if classes %}
+<div class="flex flex-wrap gap-2 mb-5">
+  <a href="/slots"
+     class="text-xs font-medium px-3 py-1.5 rounded-full border transition-all
+            {% if not active_class_id %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-slate-500 border-slate-200 hover:border-slate-300{% endif %}">
+    All classes
+  </a>
+  {% for c in classes %}
+  <a href="/slots?class_id={{ c.id }}"
+     class="text-xs font-medium px-3 py-1.5 rounded-full border transition-all
+            {% if active_class_id == c.id %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-slate-500 border-slate-200 hover:border-slate-300{% endif %}">
+    {{ c.course_name }} · {{ c.section }}
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if not grouped %}
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm px-6 py-20 text-center">
   <p class="text-4xl mb-3">🗓</p>
   <p class="font-semibold text-slate-700 mb-1">No slots found</p>
-  <p class="text-sm text-slate-400 mb-5">Use the button above to generate slots for the upcoming week.</p>
+  <p class="text-sm text-slate-400 mb-5">
+    {% if active_class_id %}No slots generated for this class yet.{% else %}Use the button above to generate slots for a class.{% endif %}
+  </p>
   <a href="/populate-schedule" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all">Generate Slots</a>
 </div>
 {% else %}
 
-{% set cur = namespace(date='') %}
-{% set open = namespace(card=false) %}
-{% for slot in slots %}
-  {% if slot.date != cur.date %}
-    {% if open.card %}</tbody></table></div></div>{% endif %}
-    {% set cur.date = slot.date %}
-    {% set open.card = true %}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-4">
-      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
-        <h3 class="font-semibold text-slate-900">{{ slot.date }}</h3>
-        {% if slot.date < today %}
-          <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full">Past</span>
-        {% else %}
-          <span class="text-xs font-medium bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">Upcoming</span>
-        {% endif %}
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead><tr class="border-b border-slate-50">
-            <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">Time</th>
-            <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">Bookings</th>
-            <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">Capacity</th>
-            <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-3 w-48">Fill</th>
-            <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">Adjust</th>
-          </tr></thead>
-          <tbody class="divide-y divide-slate-50">
-  {% endif %}
-          <tr class="hover:bg-slate-50 transition-colors">
+{% for class_id, group in grouped.items() %}
+<div class="mb-8">
+  <!-- Class header -->
+  <div class="flex items-center gap-2 mb-3">
+    <span class="text-sm font-semibold text-slate-900">{{ group.label }}</span>
+    {% if group.instructor %}
+    <span class="text-xs text-slate-400">— {{ group.instructor }}</span>
+    {% endif %}
+  </div>
+
+  {% for slot_date, slots in group.by_date.items() %}
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-3">
+    <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+      <h3 class="font-semibold text-slate-800 text-sm">{{ slot_date }}</h3>
+      {% if slot_date < today %}
+        <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full">Past</span>
+      {% else %}
+        <span class="text-xs font-medium bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">Upcoming</span>
+      {% endif %}
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="border-b border-slate-50">
+          <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-2.5">Time</th>
+          <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-2.5">Bookings</th>
+          <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-2.5">Capacity</th>
+          <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-2.5 w-48">Fill</th>
+          <th class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-5 py-2.5">Adjust</th>
+          <th class="px-5 py-2.5"></th>
+        </tr></thead>
+        <tbody class="divide-y divide-slate-50">
+          {% for slot in slots %}
+          <tr class="hover:bg-slate-50 transition-colors" id="row-{{ slot.id }}">
             <td class="px-5 py-3.5">
               <span class="text-sm font-semibold bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg">{{ slot.time }}</span>
             </td>
@@ -74,15 +103,42 @@
                 </button>
               </div>
             </td>
+            <td class="px-5 py-3.5">
+              {% if slot.current_bookings == 0 %}
+              <button onclick="deleteSlot({{ slot.id }})"
+                      class="text-xs text-slate-300 hover:text-red-500 transition-colors" title="Delete slot">
+                ✕
+              </button>
+              {% endif %}
+            </td>
           </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endfor %}
+</div>
 {% endfor %}
-{% if open.card %}</tbody></table></div></div>{% endif %}
+
 {% endif %}
 
 {% endblock %}
 
 {% block scripts %}
 <script>
+async function deleteSlot(id) {
+  if (!confirm('Delete this slot? This cannot be undone.')) return;
+  const res = await fetch(`/slots/${id}/delete`, { method: 'POST' });
+  const data = await res.json();
+  if (res.ok) {
+    document.getElementById(`row-${id}`).remove();
+    showToast('Slot deleted.', 'success');
+  } else {
+    showToast(data.error || 'Could not delete slot.', 'error');
+  }
+}
+
 async function updateCap(id) {
   const inp = document.getElementById(`inp-${id}`);
   const cap = parseInt(inp.value);

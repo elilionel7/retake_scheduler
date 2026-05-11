@@ -5,15 +5,39 @@
 {% block content %}
 
 <!-- Upcoming -->
-<h2 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-  <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Upcoming Sessions
-</h2>
+<div class="flex items-center justify-between mb-3">
+  <h2 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+    <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Upcoming Sessions
+  </h2>
+</div>
+
+<!-- Date filter chips -->
+{% if upcoming_dates %}
+<div class="flex flex-wrap gap-2 mb-4">
+  <a href="/sessions"
+     class="text-xs font-medium px-3 py-1.5 rounded-full border transition-all
+            {% if not date_filter %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-slate-500 border-slate-200 hover:border-slate-300{% endif %}">
+    All dates
+  </a>
+  {% for d in upcoming_dates %}
+  <a href="/sessions?date={{ d }}"
+     class="text-xs font-medium px-3 py-1.5 rounded-full border transition-all
+            {% if date_filter == d %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-slate-500 border-slate-200 hover:border-slate-300{% endif %}">
+    {{ d }}
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
 
 {% if not upcoming %}
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm px-6 py-14 text-center mb-8">
   <p class="text-3xl mb-2">📭</p>
-  <p class="font-medium text-slate-700 mb-1">No scheduled retakes</p>
-  <p class="text-sm text-slate-400">Students who book a slot will appear here for marking.</p>
+  <p class="font-medium text-slate-700 mb-1">
+    {% if date_filter %}No sessions on {{ date_filter }}{% else %}No scheduled retakes{% endif %}
+  </p>
+  <p class="text-sm text-slate-400">
+    {% if date_filter %}<a href="/sessions" class="text-blue-600 hover:underline">View all dates</a>{% else %}Students who book a slot will appear here for marking.{% endif %}
+  </p>
 </div>
 {% else %}
 <div class="bg-blue-50 border border-blue-200 text-blue-800 rounded-xl px-4 py-3 text-xs mb-4">

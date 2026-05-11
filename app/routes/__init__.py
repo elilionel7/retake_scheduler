@@ -8,6 +8,7 @@ from .home_routes import home_bp
 from .slot_routes import slot_bp
 from .attendance_routes import attendance_bp
 from .auth_routes import auth_bp
+from .profile_routes import profile_bp
 
 
 def register_blueprints(app):
@@ -21,3 +22,4 @@ def register_blueprints(app):
     app.register_blueprint(populate_schedule_bp)
     app.register_blueprint(slot_bp)
     app.register_blueprint(attendance_bp)
+    app.register_blueprint(profile_bp)

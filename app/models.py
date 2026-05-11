@@ -55,6 +55,8 @@ class RetakeSchedule(db.Model):
     time = db.Column(db.String(5), nullable=False)
     max_capacity = db.Column(db.Integer, default=5)
     current_bookings = db.Column(db.Integer, default=0)
+    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=True, index=True)
+    assigned_class = db.relationship('Class', backref='retake_slots')
 
 class Retake(db.Model):
     id = db.Column(db.Integer, primary_key=True)

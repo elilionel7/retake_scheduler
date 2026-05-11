@@ -7,6 +7,24 @@ from app.email_utils import send_booking_confirmation
 schedule_bp = Blueprint("schedule", __name__)
 
 
+def _get_slots_for_student(student):
+    """Return available future slots for the student's class (or global slots)."""
+    today = date.today().strftime('%Y-%m-%d')
+    return (
+        RetakeSchedule.query
+        .filter(
+            db.or_(
+                RetakeSchedule.class_id == student.class_id,
+                RetakeSchedule.class_id == None,
+            ),
+            RetakeSchedule.current_bookings < RetakeSchedule.max_capacity,
+            RetakeSchedule.date >= today,
+        )
+        .order_by(RetakeSchedule.date, RetakeSchedule.time)
+        .all()
+    )
+
+
 @schedule_bp.route("/schedule", methods=["GET", "POST"])
 def schedule():
     if request.method == "POST":
@@ -32,6 +50,11 @@ def schedule():
         selected_slot = RetakeSchedule.query.get(schedule_id)
         if not selected_slot:
             return "Invalid schedule slot.", 400
+
+        # Ensure the slot belongs to the student's class (or is global)
+        if selected_slot.class_id is not None and selected_slot.class_id != student.class_id:
+            return "This slot is not available for your class.", 403
+
         if selected_slot.current_bookings >= selected_slot.max_capacity:
             return "This time slot is fully booked.", 400
 
@@ -51,23 +74,11 @@ def schedule():
 
         return "Retake scheduled successfully!"
 
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 10, type=int)
-
-    available_slots_pagination = RetakeSchedule.query.filter(
-        RetakeSchedule.current_bookings < RetakeSchedule.max_capacity
-    ).paginate(page=page, per_page=per_page, error_out=False)
-
-    return render_template(
-        "schedule.html",
-        available_slots=available_slots_pagination.items,
-        pagination=available_slots_pagination,
-    )
+    return render_template("schedule.html")
 
 
 @schedule_bp.route("/schedule/cancel", methods=["POST"])
 def cancel_retake():
-    """Voluntary cancellation — no attempt penalty as long as within deadline."""
     data = request.get_json() if request.is_json else request.form
     student_id = data.get("student_id")
 
@@ -98,7 +109,6 @@ def cancel_retake():
 
 @schedule_bp.route("/schedule/modify", methods=["PATCH"])
 def modify_retake():
-    """One-time slot change while still within the authorization window."""
     if not request.is_json:
         return jsonify({"error": "Expected JSON data"}), 400
 
@@ -127,6 +137,8 @@ def modify_retake():
     new_slot = RetakeSchedule.query.get(new_schedule_id)
     if not new_slot:
         return jsonify({"error": "Invalid schedule slot"}), 400
+    if new_slot.class_id is not None and new_slot.class_id != student.class_id:
+        return jsonify({"error": "This slot is not available for your class."}), 403
     if new_slot.current_bookings >= new_slot.max_capacity:
         return jsonify({"error": "New schedule slot is fully booked"}), 400
 
@@ -137,7 +149,6 @@ def modify_retake():
     try:
         if old_slot:
             old_slot.current_bookings = max(0, old_slot.current_bookings - 1)
-
         new_slot.current_bookings += 1
         existing_retake.date = new_slot.date
         existing_retake.time = new_slot.time
@@ -158,7 +169,6 @@ def modify_retake():
 
 @schedule_bp.route("/schedule/status")
 def schedule_status():
-    """Returns the current retake status for a student (JSON)."""
     student_id = request.args.get("student_id")
     if not student_id:
         return jsonify({"error": "Missing student_id"}), 400
@@ -168,12 +178,23 @@ def schedule_status():
         return jsonify({"error": "Student not found"}), 404
 
     existing = Retake.query.filter_by(student_id=student_id, status="scheduled").first()
+    slots = _get_slots_for_student(student)
+
     return jsonify({
         "name": student.name,
         "authorized": student.is_authorized,
         "attempts_used": student.attempts_used,
         "deadline": student.authorization_deadline.isoformat() if student.authorization_deadline else None,
         "deadline_passed": student.deadline_passed,
+        "available_slots": [
+            {
+                "id": s.id,
+                "date": s.date,
+                "time": s.time,
+                "available": s.max_capacity - s.current_bookings,
+            }
+            for s in slots
+        ],
         "existing_retake": {
             "id": existing.id,
             "date": existing.date,

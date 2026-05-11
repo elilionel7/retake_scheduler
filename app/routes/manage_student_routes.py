@@ -30,20 +30,40 @@ def manage_students():
             student.authorization_deadline = None
 
         elif action == 'set_window':
-            # Instructor sets a custom window for this student (special case override)
             try:
                 days = int(request.form['custom_window_days'])
                 if days < 1:
                     return "Window must be at least 1 business day.", 400
                 student.custom_window_days = days
-                # If already authorized, recalculate deadline from today using the new window
                 if student.is_authorized:
                     student.authorization_deadline = add_business_days(date.today(), days)
             except (ValueError, KeyError):
                 return "Invalid window value.", 400
 
         db.session.commit()
-        return redirect(url_for('manage-students.manage_students'))
+        # Preserve search/page state after POST
+        q = request.form.get('q', '')
+        page = request.form.get('page', 1)
+        return redirect(url_for('manage-students.manage_students', q=q, page=page))
 
-    students = Student.query.all()
-    return render_template('manage_students.html', students=students)
+    page = request.args.get('page', 1, type=int)
+    per_page = 25
+    search = request.args.get('q', '').strip()
+
+    query = Student.query
+    if search:
+        query = query.filter(
+            db.or_(
+                Student.name.ilike(f'%{search}%'),
+                Student.student_id.cast(db.String).ilike(f'%{search}%'),
+            )
+        )
+
+    pagination = query.order_by(Student.name).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    return render_template('manage_students.html',
+                           students=pagination.items,
+                           pagination=pagination,
+                           search=search)
